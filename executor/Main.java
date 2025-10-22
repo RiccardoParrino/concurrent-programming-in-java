@@ -16,6 +16,14 @@ class SingleThreadScheduledExecutor {
 
     public static void example() throws Exception {
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.schedule(() -> {System.out.println("I'll print after 2 seconds");},
+                                                     2l,
+                                                     TimeUnit.SECONDS);
+        scheduledExecutorService.shutdown();
+    }
+
+    public static void example2() throws Exception {
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleAtFixedRate(() -> {System.out.println("I'm a scheduled executor service!");},1l,1l,TimeUnit.SECONDS);
 
         scheduledExecutorService.schedule( () -> {

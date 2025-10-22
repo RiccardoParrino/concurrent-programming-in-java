@@ -1,11 +1,30 @@
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main (String [] args) throws Exception {
-        CachedThreadPool.example();
+        SingleThreadScheduledExecutor.example();
+    }
+
+}
+
+class SingleThreadScheduledExecutor {
+
+    public static void example() throws Exception {
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        scheduledExecutorService.scheduleAtFixedRate(() -> {System.out.println("I'm a scheduled executor service!");},1l,1l,TimeUnit.SECONDS);
+
+        scheduledExecutorService.schedule( () -> {
+                System.out.println("Shutting down...");
+                scheduledExecutorService.shutdown();
+            }, 
+            5, 
+            TimeUnit.SECONDS
+        );
     }
 
 }

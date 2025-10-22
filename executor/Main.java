@@ -5,15 +5,35 @@ import java.util.concurrent.Future;
 public class Main {
 
     public static void main (String [] args) throws Exception {
-        FixedThreadPool.example();
+        SingleThreadExecutor.example2();
     }
 
 }
 
 class SingleThreadExecutor {
 
-    public static void example () throws Exception {
+    public static void example() throws Exception {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {Thread.sleep(1000 * 10); System.out.println("future1"); return null;});
+        executorService.submit(() -> {Thread.sleep(1000 *  5); System.out.println("future2"); return null;});
+        executorService.submit(() -> {System.out.println("future3"); return null;});
+
+        executorService.shutdown();
+    }
+
+    public static void example2() throws Exception {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.submit(() -> {Thread.sleep(1000 * 10); System.out.println("future1"); return null;});
+
+        ExecutorService executorService2 = Executors.newSingleThreadExecutor();
+        executorService2.submit(() -> {Thread.sleep(1000 *  5); System.out.println("future2"); return null;});
+
+        ExecutorService executorService3 = Executors.newSingleThreadExecutor();
+        executorService3.submit(() -> {System.out.println("future3"); return null;});
+
+        executorService.shutdown();
+        executorService2.shutdown();
+        executorService3.shutdown();
     }
 
 }

@@ -5,7 +5,21 @@ import java.util.concurrent.Future;
 public class Main {
 
     public static void main (String [] args) throws Exception {
-        SingleThreadExecutor.example2();
+        CachedThreadPool.example();
+    }
+
+}
+
+class CachedThreadPool {
+
+    public static void example() throws Exception {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.submit(() -> {Thread.sleep(1000 * 10); System.out.println("future1"); return null;});
+        executorService.submit(() -> {System.out.println("future2"); return null;});
+        executorService.submit(() -> {System.out.println("future3"); return null;});
+        executorService.submit(() -> {System.out.println("future4"); return null;});
+
+        executorService.shutdown();
     }
 
 }

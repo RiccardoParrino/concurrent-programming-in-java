@@ -23,9 +23,11 @@ class MyState {
     }
 
     public void addState() throws Exception {
-        wait(10 * 1000); // wait for ten seconds
-        this.currentState += 1;
-        System.out.println(this.currentState);
+        synchronized (this) {
+            wait(10 * 1000); // wait for ten seconds
+            this.currentState += 1;
+            System.out.println(this.currentState);
+        }
     }
 
     @Override

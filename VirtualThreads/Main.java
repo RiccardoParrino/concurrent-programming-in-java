@@ -1,3 +1,4 @@
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -6,7 +7,10 @@ import java.util.concurrent.Future;
 public class Main {
     
     public static void main (String [] args) {
-        VirtualThreadUseCase.example();
+        Long start = System.currentTimeMillis();
+        int res = FibonacciSingleThreads.example(40);
+        Long end = System.currentTimeMillis();
+        System.out.println(res + " in " + String.valueOf(end-start) + " ms");
     }
 
 }
@@ -109,6 +113,63 @@ class VirtualThreadUseCase {
                     e.printStackTrace();
                 }
             });
+        }
+    }
+
+}
+
+class FibonacciVirtualThreads {
+
+    private static ExecutorService ExecutorService = Executors.newVirtualThreadPerTaskExecutor();
+
+    public static int example(int n) {
+        try{
+            return FibonacciVirtualThreads.compute(n);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    private static int compute(int n) throws Exception {
+        if ( n <= 1 ) {
+            return 1;
+        } else {
+            CountDownLatch countDownLatch = new CountDownLatch(2);
+            int resMinus1 = FibonacciVirtualThreads
+                .ExecutorService
+                    .submit(() -> {
+                        int res = compute(n-1);
+                        countDownLatch.countDown();
+                        return res;
+                }).get();
+
+
+            int resMinus2 = FibonacciVirtualThreads
+                .ExecutorService
+                    .submit(() -> {
+                        int res = compute(n-2); 
+                        countDownLatch.countDown();
+                        return res;
+                    }).get();
+
+            return resMinus1 + resMinus2;
+        }
+    }
+
+}
+
+class FibonacciSingleThreads {
+
+    public static int example(int n) {
+        return FibonacciSingleThreads.compute(n);
+    }
+
+    private static int compute(int n) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return compute(n-1) + compute(n-2);
         }
     }
 

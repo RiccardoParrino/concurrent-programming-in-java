@@ -10,7 +10,36 @@ import java.util.concurrent.Future;
 public class Main {
     
     public static void main (String [] args) throws Exception {
-        AsyncFileExample.example();
+        SimpleReadFileNIO.example();
+    }
+
+}
+
+class SimpleReadFileNIO {
+
+    // Channels - Buffer
+    public static void example() {
+        Path path = Path.of("example.txt");
+        ByteBuffer buffer = ByteBuffer.allocate(16);
+
+        try (FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ)) {
+            
+            int bytesRead = 0;
+            while ( (bytesRead = fileChannel.read(buffer)) > 0 ) {
+                buffer.flip();
+                System.out.println(bytesRead);
+
+                while (buffer.hasRemaining()) {
+                    System.out.println((char)buffer.get());
+                }
+
+                buffer.clear();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

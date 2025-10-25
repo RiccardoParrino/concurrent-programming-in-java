@@ -19,6 +19,5 @@ public class OrderRestController {
     public List<Order> findAll() {
         return orderService.findAll();
     }
-    
 
 }

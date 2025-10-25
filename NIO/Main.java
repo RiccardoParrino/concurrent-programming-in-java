@@ -6,17 +6,14 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-public class Main {
-    
-    public static void main (String [] args) throws Exception {
-        TwoAsynchronousFileChannelNIO.example();
-    }
-
-}
 
 /*
  * Buffer Classes
@@ -62,6 +59,90 @@ public class Main {
  * Selector
  */
 
+
+public class Main {
+    
+    public static void main (String [] args) throws Exception {
+        new ListAsynchronousFileChannelNIO().runSimple();
+    }
+
+}
+
+class ListAsynchronousFileChannelNIO {
+
+    private ConcurrentHashMap<String, Path> paths = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, ByteBuffer> buffers = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, AsynchronousFileChannel> asynchronousFileChannels = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Future<Integer>> futures = new ConcurrentHashMap<>();
+
+    public void readFile (String filePath) throws IOException {
+        Path path = Path.of(filePath);
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        AsynchronousFileChannel asynchronousFileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.READ);
+        Future<Integer> future = asynchronousFileChannel.read(buffer, 0);
+        paths.put(filePath, path);
+        buffers.put(filePath, buffer);
+        asynchronousFileChannels.put(filePath, asynchronousFileChannel);
+        futures.put(filePath, future);
+    }
+    
+    /**
+     *  cicla su tutto l'hashmap
+     *      se un future e' completato
+     *          print buffer
+     *          rimuovi future
+     *          rimuovi path
+     *          rimuovi buffer
+     *          rimuovi AsynchronousFileChannel
+     */
+    public void run() {
+        while(true) {
+            futures.forEach( (key, future) -> {
+                if (future.isDone()) {
+                    ByteBuffer buffer = buffers.get(key);
+                    buffer.flip();
+                    System.out.println("reading file: " + key);
+
+                    while (buffer.hasRemaining())
+                        System.out.print((char)buffer.get());
+
+                    System.out.println();
+                    futures.remove(key);
+                    paths.remove(key);
+                    asynchronousFileChannels.remove(key);
+                    buffers.remove(key);
+                }
+            } );
+        }
+    }
+
+    public void runSimple() throws IOException {
+
+        for (int i = 0; i < 10; i++) {
+            readFile( "example"+String.valueOf(i)+".txt" );
+        }
+
+        while(true) {
+            futures.forEach( (key, future) -> {
+                if (future.isDone()) {
+                    ByteBuffer buffer = buffers.get(key);
+                    buffer.flip();
+                    System.out.println("reading file: " + key);
+
+                    while (buffer.hasRemaining())
+                        System.out.print((char)buffer.get());
+
+                    System.out.println();
+                    futures.remove(key);
+                    paths.remove(key);
+                    asynchronousFileChannels.remove(key);
+                    buffers.remove(key);
+                }
+            } );
+        }
+    }
+
+}
 
 class TwoAsynchronousFileChannelNIO {
 

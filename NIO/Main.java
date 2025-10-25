@@ -8,11 +8,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
     
     public static void main (String [] args) throws Exception {
-        AsynchronousFileChannelNIO.example();
+        TwoAsynchronousFileChannelNIO.example();
     }
 
 }
@@ -60,6 +61,56 @@ public class Main {
  * 
  * Selector
  */
+
+
+class TwoAsynchronousFileChannelNIO {
+
+    public static void example() throws Exception {
+        Path path1 = Path.of("example1.txt");
+        Path path2 = Path.of("example2.txt");
+
+        AsynchronousFileChannel asynchronousFileChannel1 = AsynchronousFileChannel.open(path1, StandardOpenOption.READ);
+        AsynchronousFileChannel asynchronousFileChannel2 = AsynchronousFileChannel.open(path2, StandardOpenOption.READ);
+
+        ByteBuffer buffer1 = ByteBuffer.allocate(1024);
+        ByteBuffer buffer2 = ByteBuffer.allocate(1024);
+
+        Future<Integer> future1 = asynchronousFileChannel1.read(buffer1, 0);
+        Future<Integer> future2 = asynchronousFileChannel2.read(buffer2, 0);
+
+        future1.get(10, TimeUnit.MILLISECONDS);
+        future2.get(10, TimeUnit.MILLISECONDS);
+
+        // simulates join ops in CompletableFuture
+        while( !future1.isDone() ) {
+            System.out.println("Future1 is working...");
+        }
+
+        // simulates join ops in CompletableFuture
+        while( !future2.isDone() ) {
+            System.out.println("Future2 is working...");
+        }
+
+        // now both of thread are completed
+
+        // read buffer1
+        System.out.println("Reading buffer 1");
+        buffer1.flip();
+        while (buffer1.hasRemaining()) {
+            System.out.print((char)buffer1.get());
+        }
+        System.out.println("");
+
+        // read buffer2
+        System.out.println("Reading buffer 2");
+        buffer2.flip();
+        while (buffer2.hasRemaining()) {
+            System.out.print((char)buffer2.get());
+        }
+
+    }
+
+}
 
 class AsynchronousFileChannelNIO {
 

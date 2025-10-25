@@ -12,8 +12,12 @@ import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /*
  * Buffer Classes
@@ -63,24 +67,37 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     
     public static void main (String [] args) throws Exception {
-        ListAsynchronousFileChannelWithCompletionHandlerNIO.example();
+        AsynchronousScannerExample.example();
     }
 
 }
 
-// class AsynchronousScannerExample {
+class AsynchronousScannerExample {
 
-//     public static void example() {  
-//         Scanner scanner = new Scanner(System.in);
-//         String s1 = scanner.nextLine();
-//         System.out.println("You have entered: " + s1);
-//         scanner.close();
-//     }
+    public static void example() throws InterruptedException, ExecutionException, TimeoutException {  
+        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
-//     public static void asyncExample() {
-//     }
+        Future<String> future = 
+            CompletableFuture.supplyAsync( () -> {
+                Scanner scanner = new Scanner(System.in);
+                String s1 = scanner.nextLine();
+                System.out.println("You have entered: " + s1);
+                scanner.close();
+                return s1;
+            }, executorService );
 
-// }
+        int i = 1;
+        while (i <= 10) {
+            System.out.println("I'll close the input in 10 secs: " + String.valueOf(i));
+            i = i + 1;
+            Thread.sleep(1000);
+        }
+
+        System.out.println(future.get());
+
+    }
+
+}
 
 class ListAsynchronousFileChannelWithCompletionHandlerNIO {
 

@@ -1,16 +1,118 @@
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 
 public class Main {
     
     public static void main (String [] args) throws Exception {
-        SimpleReadFileNIO.example();
+        AsynchronousFileChannelNIO.example();
+    }
+
+}
+
+/*
+ * Buffer Classes
+ * 
+ * Buffer
+ * ByteBuffer
+ * ByteOrder
+ * CharBuffer
+ * DoubleBuffer
+ * FloatBuffer
+ * IntBuffer
+ * LongBuffer
+ * MappedByteBuffer
+ * ShortBuffer
+ */
+
+/*
+ * Channel Classes
+ * 
+ * AsynchrnousChannelGroup
+ * Channels
+ * SelectableChannel
+ * 
+ * DatagramChannel
+ * 
+ * AsynchronousFileChannel
+ * FileChannel
+ * FileChannel.MapMode
+ * FileLock
+ * 
+ * AsynchronousServerSocketChannel
+ * ServerSocketChannel
+ * 
+ * AsynchronousSocketChannel
+ * SocketChannel
+ * 
+ * Pipe
+ * Pipe.SinkChannel
+ * Pipe.SourceChannel
+ * 
+ * MembershipKey
+ * 
+ * Selector
+ */
+
+class AsynchronousFileChannelNIO {
+
+    public static void example() throws Exception {
+        Path path = Path.of("example.txt");
+
+        AsynchronousFileChannel asynchronousFileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.READ);
+        
+        ByteBuffer buffer = ByteBuffer.allocate(16);
+        Future<Integer> result = asynchronousFileChannel.read(buffer, 0);
+
+        while( !result.isDone() ) {
+            System.out.println("Reading file asynchronously!");
+        }
+
+        System.out.println("Byte read: " + result.get());
+        buffer.flip();
+        while(buffer.hasRemaining()) {
+            System.out.println((char)buffer.get());
+        }
+        System.out.println(" ");
+
+        buffer.clear();
+        asynchronousFileChannel.close();
+    }
+
+}
+
+class SimpleIntegerFileNIO {
+
+    public static void example() {
+        Path path = Path.of("example.txt");
+        IntBuffer buffer = IntBuffer.allocate(16);
+
+        try( FileChannel fileChannel = FileChannel.open(path, StandardOpenOption.READ) ) {
+            
+            // int bytesRead = 0;
+            // while( (bytesRead = fileChannel.read(buffer)) > 0 ) {
+            // }
+
+            int capacity = 10;
+            IntBuffer ib = IntBuffer.allocate(capacity);
+
+            ib.put(100);
+            ib.put(2,9);
+
+            System.out.println(ib.get(2));
+
+            System.out.println(Arrays.toString(ib.array()));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

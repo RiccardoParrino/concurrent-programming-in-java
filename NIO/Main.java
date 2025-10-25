@@ -2,16 +2,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -63,8 +63,57 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     
     public static void main (String [] args) throws Exception {
-        new ListAsynchronousFileChannelNIO().runSimple();
+        ListAsynchronousFileChannelWithCompletionHandlerNIO.example();
     }
+
+}
+
+// class AsynchronousScannerExample {
+
+//     public static void example() {  
+//         Scanner scanner = new Scanner(System.in);
+//         String s1 = scanner.nextLine();
+//         System.out.println("You have entered: " + s1);
+//         scanner.close();
+//     }
+
+//     public static void asyncExample() {
+//     }
+
+// }
+
+class ListAsynchronousFileChannelWithCompletionHandlerNIO {
+
+    public static void example() throws IOException, InterruptedException {
+        System.out.println("hi");
+        Path path = Path.of("example1.txt");
+        AsynchronousFileChannel asynchronousFileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.READ);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        
+        asynchronousFileChannel.read(byteBuffer, 0, byteBuffer, new CompletionHandler<Integer,ByteBuffer>() {
+
+            @Override
+            public void completed(Integer result, ByteBuffer attachment) {
+                attachment.flip();
+                while(attachment.hasRemaining()) {
+                    System.out.print((char)attachment.get());
+                }
+                System.out.println();
+                attachment.clear();
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void failed(Throwable exc, ByteBuffer attachment) {
+                exc.printStackTrace();
+                countDownLatch.countDown();
+            }
+            
+        });
+
+        countDownLatch.await();
+    } 
 
 }
 

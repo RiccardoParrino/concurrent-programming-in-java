@@ -1,10 +1,11 @@
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 public class Main {
     
     public static void main (String [] args) {
-        ThreadFactoryUseCase.example();
+        DefaultThreadFactoryExample.example();
     }
 
 }
@@ -73,6 +74,28 @@ class ThreadFactoryUseCase {
             "Total number of threads created using CustomThreadFactory = "
             + threadFactory.getCount()
         );
+    }
+
+}
+
+class DefaultThreadFactoryExample {
+
+    public static void example () {
+        // Thread group-1 
+        ThreadFactory threadFactory = Executors.defaultThreadFactory();
+        for (int i = 0; i < 10; i++) {
+            Thread thread = threadFactory.newThread(() -> System.out.println("I'm a new Thread!"));
+            System.out.println("Name given by threadFactory = " + thread.getName());
+            thread.start();
+        }
+
+        // Thread group-2
+        ThreadFactory threadFactory2 = Executors.defaultThreadFactory();
+        for (int i = 0; i < 10; i++) {
+            Thread thread = threadFactory2.newThread(() -> System.out.println("I'm a new Thread!"));
+            System.out.println("Name given by threadFactory = " + thread.getName());
+            thread.start();
+        }
     }
 
 }

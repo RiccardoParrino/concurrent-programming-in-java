@@ -3,41 +3,81 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Main {
     
     public static void main(String [] args) {
-
+        AtomicIntegerExample.example();
     }
 
 }
 
-class SafeCounterWithLock {
+class IntegerExample {
 
-    private int counter = 0;
+    private static class Counter {
+        Integer counter = 0;
 
-    public int getValue() {
-        return this.counter;
+        public void increment() {
+            this.counter++;
+        }
+
+        public Integer getCounter() {
+            return this.counter;
+        }
     }
 
-    public synchronized void increment() {
-        counter++;
+    public static void example() {
+        Counter counter = new Counter();
+
+        Thread t1 = new Thread( () -> {
+            for (int i = 0; i < 200_000; i++) {
+                counter.increment();
+            }
+        } );
+
+        Thread t2 = new Thread( () -> {
+            for (int i = 0; i < 200_000; i++) {
+                counter.increment();
+            }
+        } );
+
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
+        
+        System.out.println(counter.getCounter());
     }
 
 }
 
-class SafeCounterWithoutLock {
+class AtomicIntegerExample {
 
-    private final AtomicInteger counter = new AtomicInteger(0);
+    public static void example() {
+        AtomicInteger counter = new AtomicInteger(0);
 
-    int getValue() {
-        return counter.get();
+        Thread t1 = new Thread( () -> {
+            for (int i = 0; i < 200_000; i++) {
+                counter.incrementAndGet();
+            }
+        } );
+
+        Thread t2 = new Thread( () -> {
+            for (int i = 0; i < 200_000; i++) {
+                counter.incrementAndGet();
+            }
+        } );
+
+        t1.start();
+        t2.start();
+        try {
+            t1.join();
+            t2.join();
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
+        
+        System.out.println(counter.get());
     }
-
-    void increment() {
-        counter.incrementAndGet();
-    }
-
-}
-
-class AtomicLong {
-
     
-
 }

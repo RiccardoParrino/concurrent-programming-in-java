@@ -1,2 +1,4 @@
 note
 *.class
+/**/target
+settings.json
